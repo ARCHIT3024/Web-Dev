@@ -1,0 +1,141 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Management System</title>
+    <style>
+        body { font-family: MV Boli, sans-serif; background-color: #b32bd8a1; margin: 0; padding: 20px; }
+        h1 { text-align: center; color: #030303; }
+        form { display: flex; justify-content: center; margin-bottom: 20px; }
+        input, button { padding: 10px; margin: 5px; border-radius: 5px; border: 1px solid #ccc; }
+        button { background-color: #5cb85c; color: white; cursor: pointer; }
+        button:hover { background-color: #4cae4c; }
+        .task { display: flex; justify-content: space-between; align-items: center; background: white; padding: 10px; margin: 5px 0; border-radius: 5px; }
+        .completed { text-decoration: line-through; color: grey; }
+        .task-controls { display: flex; }
+        .task-controls button { margin-left: 5px; }
+        #taskList { max-width: 600px; margin: auto; }
+        /* Modal styles */
+        .modal { display: none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
+        .modal-content { background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 300px; border-radius: 5px; }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; }
+        .close:hover, .close:focus { color: black; text-decoration: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <h1>Task Management System</h1>
+    <form id="taskForm">
+        <input type="text" id="taskInput" placeholder="Task Name" required>
+        <input type="text" id="categoryInput" placeholder="Category" required>
+        <input type="date" id="deadlineInput" required>
+        <button type="submit">Add Task</button>
+    </form>
+
+    <h2>Tasks</h2>
+    <div id="taskList"></div>
+
+    <!-- Modal for updating tasks -->
+    <div id="updateModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeModal">&times;</span>
+            <h2>Update Task</h2>
+            <input type="text" id="updateTaskInput" placeholder="Task Name" required>
+            <input type="text" id="updateCategoryInput" placeholder="Category" required>
+            <input type="date" id="updateDeadlineInput" required>
+            <button id="updateTaskButton">Update Task</button>
+        </div>
+    </div>
+
+    <script>
+        let tasks = [];
+        let currentTaskId = null;
+
+        document.getElementById('taskForm').onsubmit = function(event) {
+            event.preventDefault();
+            const taskName = document.getElementById('taskInput').value;
+            const category = document.getElementById('categoryInput').value;
+            const deadline = document.getElementById('deadlineInput').value;
+
+            const task = {
+                id: Date.now(),
+                name: taskName,
+                category: category,
+                deadline: deadline,
+                completed: false
+            };
+
+            tasks.push(task);
+            renderTasks();
+            this.reset();
+        };
+
+        function renderTasks() {
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '';
+            tasks.forEach(task => {
+                const taskDiv = document.createElement('div');
+                taskDiv.className = 'task';
+                taskDiv.innerHTML = `
+                    <span class="${task.completed ? 'completed' : ''}">${task.name} (${task.category}) - ${task.deadline}</span>
+                    <div class="task-controls">
+                        <button onclick="toggleComplete(${task.id})">${task.completed ? 'Undo' : 'Complete'}</button>
+                        <button onclick="openUpdateModal(${task.id})">Update</button>
+                        <button onclick="deleteTask(${task.id})">Delete</button>
+                    </div>
+                `;
+                taskList.appendChild(taskDiv);
+            });
+        }
+
+        function toggleComplete(id) {
+            const task = tasks.find(t => t.id === id);
+            if (task) {
+                task.completed = !task.completed;
+                renderTasks();
+            }
+        }
+
+        function deleteTask(id) {
+            tasks = tasks.filter(t => t.id !== id);
+            renderTasks();
+        }
+
+        function openUpdateModal(id) {
+            const task = tasks.find(t => t.id === id);
+            if (task) {
+                currentTaskId = id;
+                document.getElementById('updateTaskInput').value = task.name;
+                document.getElementById('updateCategoryInput').value = task.category;
+                document.getElementById('updateDeadlineInput').value = task.deadline;
+                document.getElementById('updateModal').style.display = 'block';
+            }
+        }
+
+        document.getElementById('closeModal').onclick = function() {
+            document.getElementById('updateModal').style.display = 'none';
+        }
+
+        document.getElementById('updateTaskButton').onclick = function() {
+            const taskName = document.getElementById('updateTaskInput').value;
+            const category = document.getElementById('updateCategoryInput').value;
+            const deadline = document.getElementById('updateDeadlineInput').value;
+
+            const task = tasks.find(t => t.id === currentTaskId);
+            if (task) {
+                task.name = taskName;
+                task.category = category;
+                task.deadline = deadline;
+                renderTasks();
+                document.getElementById('updateModal').style.display = 'none';
+            }
+        }
+
+        window.onclick = function(event) {
+            if (event.target === document.getElementById('updateModal')) {
+                document.getElementById('updateModal').style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
