@@ -1,1 +1,1 @@
-This is a Web Development repository containg codes for different application websites.
+This is my first web dev project made during a hackathon.
